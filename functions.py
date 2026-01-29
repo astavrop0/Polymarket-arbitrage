@@ -221,12 +221,6 @@ def scrape_next_games_typeC(tournament, sport, country, SEASON, nmax=30, include
             columns=["Bookmaker", "Total", "OddOver", "OddUnder", "Payout", "OUUrl", "GameUrl"]
         )
 
-    # Finally we save results
-    if not os.path.exists('./{}'.format(tournament)):
-        os.makedirs('./{}'.format(tournament))
-    data_df[['GameUrl', 'Home_id', 'Away_id', 'OddHome', 'OddDraw', 'OddAway', 'Date']].to_csv('./{}/NextGames_{}_{}.csv'.format(tournament,tournament, SEASON), sep=';', encoding='utf-8', index=False)
-
-
     driver.quit()
 
     # Always return the original games table (one row per game)
