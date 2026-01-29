@@ -1,8 +1,3 @@
-### functions 
-
-# OddsPortal scraper functions 
-
-
 import os
 import urllib
 from selenium import webdriver
@@ -22,11 +17,9 @@ from bs4 import BeautifulSoup
 import re
 
 global DRIVER_LOCATION
-#DRIVER_LOCATION ="C:\chromedriver_win32\chromedriver.exe"
 
 global TYPE_ODDS
-TYPE_ODDS = 'CLOSING' # you can change to 'OPENING' if you want to collect opening odds, any other value will make the program collect CLOSING odds
-
+TYPE_ODDS = 'CLOSING' 
 def get_opening_odd(xpath):
     # I. Get the raw data by hovering and collecting
     data = driver.find_element_by_xpath(xpath)
@@ -130,7 +123,6 @@ def scrape_over_under_for_game(game_url, total="2.50", period_code="2"):
     - game_url: relative like "/football/england/premier-league/brighton-everton-vPKFVEM6/"
                or full URL
     - total: e.g. "2.50"
-    - period_code: keep "2" for now (matches the URL you provided)
     """
     if game_url.startswith("/"):
         base_url = "https://www.oddsportal.com" + game_url
@@ -196,7 +188,7 @@ def scrape_next_games_typeC(tournament, sport, country, SEASON, nmax=30, include
     except Exception as e:
         raise
 
-    ##################### FINALLY WE CLEAN THE DATA AND SAVE IT ##########################
+
     '''Now we simply need to split team names, transform date, split score'''
 
     # (a) Split team names
