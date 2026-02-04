@@ -1,3 +1,5 @@
+# src/matching/market_matching.py
+
 from fuzzywuzzy import fuzz
 
 from src.utils_text import normalize_title
@@ -6,6 +8,7 @@ from src.matching.rules import (
     extract_outcome_from_poly_question,
     normalize_kalshi_subtitle,
 )
+from src.matching.name_mapping import NBA_POLY_TO_KALSHI_TEAM
 
 
 def match_markets_within_event_soccer(poly_markets, kalshi_markets, threshold=60):
@@ -62,8 +65,19 @@ def match_markets_within_event_soccer(poly_markets, kalshi_markets, threshold=60
     return list(kalshi_to_best.values())
 
 
-def match_markets_within_event_outcomes(poly_markets, kalshi_markets, threshold=70):
-    """Match markets for non-soccer sports using outcome-based matching."""
+def match_markets_within_event_outcomes(
+    poly_markets,
+    kalshi_markets,
+    threshold=70,
+    apply_nba_mapping=False,
+):
+    """
+    Match markets for non-soccer sports using outcome-based matching.
+
+    Minimal NBA fix:
+    - ONLY changes the Poly outcome string right before fuzzy matching
+    - ONLY when apply_nba_mapping=True
+    """
     matched = []
 
     for poly_market in poly_markets:
@@ -74,7 +88,14 @@ def match_markets_within_event_outcomes(poly_markets, kalshi_markets, threshold=
             continue
 
         for i, outcome in enumerate(outcomes):
-            outcome_normalized = normalize_title(outcome)
+            # --- minimal change: only mutate string used for matching ---
+            poly_outcome_for_match = (
+                NBA_POLY_TO_KALSHI_TEAM.get(outcome.strip().lower(), outcome)
+                if apply_nba_mapping
+                else outcome
+            )
+
+            outcome_normalized = normalize_title(poly_outcome_for_match)
             outcome_price = outcome_prices[i] if i < len(outcome_prices) else None
 
             best_match = None
@@ -103,8 +124,20 @@ def match_markets_within_event_outcomes(poly_markets, kalshi_markets, threshold=
     return matched
 
 
-def match_markets_within_event(poly_markets, kalshi_markets, sport):
+def match_markets_within_event(poly_markets, kalshi_markets, sport, poly_event_slug=None):
     """Route to appropriate market matching based on sport."""
     if is_soccer_sport(sport):
         return match_markets_within_event_soccer(poly_markets, kalshi_markets, threshold=60)
-    return match_markets_within_event_outcomes(poly_markets, kalshi_markets, threshold=70)
+
+    apply_nba = bool(
+        sport and sport.lower() == "basketball"
+        and poly_event_slug
+        and poly_event_slug.startswith("nba-")
+    )
+
+    return match_markets_within_event_outcomes(
+        poly_markets,
+        kalshi_markets,
+        threshold=70,
+        apply_nba_mapping=apply_nba,
+    )

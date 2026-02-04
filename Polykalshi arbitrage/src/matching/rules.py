@@ -1,16 +1,22 @@
 import re
 from src.utils_text import normalize_title, extract_number_from_text
+from src.matching.name_mapping import map_polymarket_nba_title
 
-def extract_game_name(title: str, platform: str) -> str:
-    """Extract game name from event title"""
+def extract_game_name(title: str, platform: str, poly_slug: str | None = None) -> str:
+    """Extract canonical game name from event title (optionally using poly_slug for NBA mapping)."""
     if platform == "polymarket":
+        # apply NBA nickname->city mapping ONLY for nba-* slugs
+        title = map_polymarket_nba_title(title, poly_slug=poly_slug)
+
         if " - More Markets" in title:
             return title.replace(" - More Markets", "").strip()
         return title
+
     elif platform == "kalshi":
         if ":" in title:
             return title.split(":")[0].strip()
         return title
+
     return title
 
 def infer_kalshi_type(title: str) -> str:

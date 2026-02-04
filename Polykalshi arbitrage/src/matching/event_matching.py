@@ -18,7 +18,11 @@ def match_events(poly_events, kalshi_events, threshold=70):
     matches = []
 
     for p in poly_events:
-        poly_game = normalize_title(extract_game_name(p["title"], "polymarket"))
+        # ✅ IMPORTANT: pass poly slug so NBA name mapping can run inside extract_game_name()
+        poly_slug = p.get("slug")  # polymarket events use "slug"
+        poly_game = normalize_title(
+            extract_game_name(p["title"], "polymarket", poly_slug=poly_slug)
+        )
         poly_type = infer_poly_type(p["title"])
 
         for k in kalshi_events:
